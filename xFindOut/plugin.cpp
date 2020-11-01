@@ -1,4 +1,5 @@
 #include "plugin.h"
+#include <TlHelp32.h>
 
 enum
 {
@@ -39,9 +40,55 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
     }
 }
 
+int hits = 0;
+duint currAddy = 0;
+PLUG_EXPORT void CBBREAKPOINT(CBTYPE cbType, PLUG_CB_BREAKPOINT* info)
+{
+    dprintf("Breakpoint %d\n", info->breakpoint->addr);
+    
+    if (info->breakpoint->addr == currAddy)
+        hits++;
+}
+static bool findOut(int argc, char* argv[])
+{
+    if (argc < 2)
+        return false;
+
+    currAddy = DbgEval(argv[1]);
+    hits = 0;
+
+    char command[128] = "";
+    sprintf_s(command, "bph %p", currAddy);
+    DbgCmdExecDirect(command);
+
+    sprintf_s(command, "bphwcond %p, 0", currAddy);
+    _plugin_logputs(command);
+    _plugin_logputs("\n");
+    DbgCmdExecDirect(command);
+
+    return true;
+}
+
+static bool findOutStop(int argc, char* argv[])
+{
+    char command[128] = "";
+    sprintf_s(command, "bphc %p", currAddy);
+    DbgCmdExecDirect(command);
+    _plugin_logprintf("This breakpoint was hit %d times\n", hits);
+    currAddy = 0;
+    hits = 0;
+
+    return true;
+}
+
 //Initialize your plugin data here.
 bool pluginInit(PLUG_INITSTRUCT* initStruct)
 {
+    if (!_plugin_registercommand(pluginHandle, "findout", findOut, false))
+        _plugin_logputs("[" PLUGIN_NAME "] Error registering the 'findout' command!");
+    if (!_plugin_registercommand(pluginHandle, "findoutstop", findOutStop, false))
+        _plugin_logputs("[" PLUGIN_NAME "] Error registering the 'findoutstop' command!");
+
     return true; //Return false to cancel loading the plugin.
 }
 
