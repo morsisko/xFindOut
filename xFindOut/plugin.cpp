@@ -7,27 +7,9 @@ enum
     DUMP
 };
 
-PLUG_EXPORT void CBINITDEBUG(CBTYPE cbType, PLUG_CB_INITDEBUG* info)
-{
-    dprintf("Debugging of %s started!\n", info->szFileName);
-}
-
 PLUG_EXPORT void CBSTOPDEBUG(CBTYPE cbType, PLUG_CB_STOPDEBUG* info)
 {
     dputs("Debugging stopped!");
-}
-
-PLUG_EXPORT void CBEXCEPTION(CBTYPE cbType, PLUG_CB_EXCEPTION* info)
-{
-    dprintf("ExceptionRecord.ExceptionCode: %08X\n", info->Exception->ExceptionRecord.ExceptionCode);
-}
-
-PLUG_EXPORT void CBDEBUGEVENT(CBTYPE cbType, PLUG_CB_DEBUGEVENT* info)
-{
-    if(info->DebugEvent->dwDebugEventCode == EXCEPTION_DEBUG_EVENT)
-    {
-        dprintf("DebugEvent->EXCEPTION_DEBUG_EVENT->%.8X\n", info->DebugEvent->u.Exception.ExceptionRecord.ExceptionCode);
-    }
 }
 
 PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
@@ -40,25 +22,54 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
     }
 }
 
-int hits = 0;
-duint currAddy = 0;
+struct BreakpointHit
+{
+    int hits = 0;
+    duint previousInstruction = 0;
+    char disassembly[256] = { 0 };
+    char regDump[1024] = { 0 };
+};
+
+std::unordered_map<duint, BreakpointHit> hitsMap;
+duint currAddy;
+
 PLUG_EXPORT void CBBREAKPOINT(CBTYPE cbType, PLUG_CB_BREAKPOINT* info)
 {
-    dprintf("Breakpoint %d\n", info->breakpoint->addr);
-    
-    if (info->breakpoint->addr == currAddy)
-        hits++;
+    if (info->breakpoint->type != bp_hardware)
+        return;
+
+    duint cip = GetContextData(UE_CIP);
+
+    if (!hitsMap[cip].hits)
+    {
+        char previousCommand[128];
+        sprintf_s(previousCommand, "dis.prev(%p)", cip);
+        duint previousInstructionAddress = DbgEval(previousCommand);
+        hitsMap[cip].previousInstruction = previousInstructionAddress;
+        GuiGetDisassembly(previousInstructionAddress, hitsMap[cip].disassembly);
+
+        REGDUMP regdump;
+        DbgGetRegDumpEx(&regdump, sizeof(regdump));
+
+        sprintf_s(hitsMap[cip].regDump, "EAX=%p\nEBX=%p\nECX=%p\nEDX=%p\nEBP=%p\nESP=%p\nESI=%p\nEDI=%p\nEIP=%p\n",
+            regdump.regcontext.cax, regdump.regcontext.cbp, regdump.regcontext.ccx, regdump.regcontext.cdx, regdump.regcontext.cbp, regdump.regcontext.csp, 
+            regdump.regcontext.csi, regdump.regcontext.cdi, regdump.regcontext.cip);
+
+    }
+
+    hitsMap[cip].hits++;
 }
+
 static bool findOut(int argc, char* argv[])
 {
     if (argc < 2)
         return false;
 
     currAddy = DbgEval(argv[1]);
-    hits = 0;
+    hitsMap.clear();
 
     char command[128] = "";
-    sprintf_s(command, "bph %p", currAddy);
+    sprintf_s(command, "bph %p, r", currAddy);
     DbgCmdExecDirect(command);
 
     sprintf_s(command, "bphwcond %p, 0", currAddy);
@@ -74,9 +85,10 @@ static bool findOutStop(int argc, char* argv[])
     char command[128] = "";
     sprintf_s(command, "bphc %p", currAddy);
     DbgCmdExecDirect(command);
-    _plugin_logprintf("This breakpoint was hit %d times\n", hits);
+    for (const auto& value : hitsMap)
+        _plugin_logprintf("Address %p, %s, hits: %d\n%s\n\n\n", value.second.previousInstruction, value.second.disassembly, value.second.hits, value.second.regDump);
+    
     currAddy = 0;
-    hits = 0;
 
     return true;
 }
