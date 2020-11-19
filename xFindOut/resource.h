@@ -3,12 +3,12 @@
 // Used by xFindOut.rc
 //
 #define IDD_DIALOG1                     101
-#define IDC_BUTTON1                     1003
-#define IDC_BUTTON2                     1004
-#define IDC_EDIT1                       1005
-#define IDC_BUTTON3                     1006
-#define IDC_LIST4                       1008
-#define IDC_LIST1                       1009
+#define IDD_DIALOG_HITS                 101
+#define IDC_FOLLOW_CPU                  1003
+#define IDC_COPY_ADDRESS                1004
+#define IDC_CONTEXT_TEXT                1005
+#define IDC_STOP_BUTTON                 1006
+#define IDC_HITS_TABLE                  1009
 
 // Next default values for new objects
 // 
