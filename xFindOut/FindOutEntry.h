@@ -1,5 +1,6 @@
 #pragma once
 #include "HitEntry.h"
+#include "HitDialog.h"
 #include <vector>
 #include <memory>
 #include <algorithm>
@@ -9,4 +10,12 @@ class FindOutEntry
 private:
 	duint breakpointAddress;
 	std::vector<std::unique_ptr<HitEntry>> hits;
+	HitDialog dialog;
+public:
+	FindOutEntry(duint breakpointAddress);
+	duint getBreakpointAddress();
+	int wasHitBefore(duint cip);
+	void hit(int index);
+	void addNew(HitEntry& hitEntry);
+	HWND getDialog();
 };

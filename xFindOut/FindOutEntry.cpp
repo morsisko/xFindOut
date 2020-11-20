@@ -1,0 +1,45 @@
+#include "FindOutEntry.h"
+
+FindOutEntry::FindOutEntry(duint breakpointAddress) :
+    breakpointAddress(breakpointAddress),
+    dialog(breakpointAddress)
+{
+
+}
+
+duint FindOutEntry::getBreakpointAddress()
+{
+    return breakpointAddress;
+}
+
+int FindOutEntry::wasHitBefore(duint cip)
+{
+    auto it = std::find_if(hits.begin(), hits.end(), [cip](const auto& hit) {
+        return hit->hittedAtAddress == cip;
+    });
+
+    if (it == hits.end())
+        return -1;
+
+    return std::distance(hits.begin(), it);
+}
+
+void FindOutEntry::hit(int index)
+{
+    if (index < 0 || index >= hits.size())
+        return;
+
+    hits[index]->hits++;
+    dialog.updateHits(index, hits[index]->hits);
+}
+
+void FindOutEntry::addNew(HitEntry& hitEntry)
+{
+    hits.push_back(std::make_unique<HitEntry>(std::move(hitEntry)));
+    dialog.insertRow(hits.back()->instruction);
+}
+
+HWND FindOutEntry::getDialog()
+{
+    return dialog.getHWND();
+}

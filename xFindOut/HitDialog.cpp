@@ -1,5 +1,10 @@
 #include "HitDialog.h"
 #include "resource.h"
+#include "StateManager.h"
+
+const char* hits = "Hits";
+const char* instruction = "Instruction";
+const char* oneStr = "1";
 
 INT_PTR CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -11,6 +16,58 @@ INT_PTR CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 		return true;
 	}
 	break;
+	case WM_INITDIALOG:
+	{
+		HWND listView = GetDlgItem(hwndDlg, IDC_HITS_TABLE);
+		ListView_SetExtendedListViewStyle(listView, LVS_EX_FULLROWSELECT | LVS_EX_ONECLICKACTIVATE);
+
+		LVCOLUMN column;
+		memset(&column, 0, sizeof(column));
+		column.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
+		column.cx = 0xA8;
+		column.cx = 0x40;
+
+		column.pszText = (LPSTR)hits;
+		ListView_InsertColumn(listView, 0, &column);
+
+		column.pszText = (LPSTR)instruction;
+		ListView_InsertColumn(listView, 1, &column);
+		ListView_SetColumnWidth(listView, 1, LVSCW_AUTOSIZE_USEHEADER);
+	}
+	break;
+	case WM_UPDATE_HITS:
+	{
+		int indexToUpdate = wParam;
+		int hits = lParam;
+
+		HWND listView = GetDlgItem(hwndDlg, IDC_HITS_TABLE);
+		int rowCount = ListView_GetItemCount(listView);
+
+		if (indexToUpdate >= rowCount)
+			return false;
+
+		char buffer[16];
+		snprintf(buffer, sizeof(buffer), "%d", hits);
+		ListView_SetItemText(listView, indexToUpdate, 0, buffer);
+	}
+	break;
+	case WM_UPDATE_INSERT_ROW:
+	{
+		char* instruction = (char*)wParam;
+
+		HWND listView = GetDlgItem(hwndDlg, IDC_HITS_TABLE);
+		int rows = ListView_GetItemCount(listView);
+
+		LVITEM item;
+		item.iItem = rows;
+		item.iSubItem = 0;
+		item.mask = LVIF_TEXT;
+		item.cchTextMax = 256;
+		item.pszText = (LPSTR)oneStr;
+		ListView_InsertItem(listView, &item);
+		ListView_SetItemText(listView, rows, 1, instruction);
+	}
+	break;
 	default:
 		break;
 	}
@@ -18,13 +75,46 @@ INT_PTR CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 	return false;
 }
 
-
-HitDialog::HitDialog(HINSTANCE instance, duint address)
+void spawnDialog(void* userdata)
 {
-	this->hwnd = CreateDialog(instance, MAKEINTRESOURCE(IDD_DIALOG_HITS), GuiGetWindowHandle(), DialogProc);
+	HitDialog* hitDialog = static_cast<HitDialog*>(userdata);
+
+	HWND hwnd = CreateDialog(StateManager::getInstance().getHInstance(), MAKEINTRESOURCE(IDD_DIALOG_HITS), GuiGetWindowHandle(), DialogProc);
+	hitDialog->setHWND(hwnd);
 
 	char windowName[64];
-	snprintf(windowName, sizeof(windowName), "Find out what accesses %X address", address);
+	snprintf(windowName, sizeof(windowName), "Find out what accesses %X address", hitDialog->getAddress());
 	SetWindowText(hwnd, windowName);
 	ShowWindow(hwnd, SW_SHOW);
+}
+
+HitDialog::HitDialog(duint address) :
+	address(address)
+{
+	GuiExecuteOnGuiThreadEx(spawnDialog, this);
+}
+
+void HitDialog::setHWND(HWND hwnd)
+{
+	this->hwnd = hwnd;
+}
+
+HWND HitDialog::getHWND()
+{
+	return hwnd;
+}
+
+duint HitDialog::getAddress()
+{
+	return address;
+}
+
+void HitDialog::updateHits(int index, int hits)
+{
+	PostMessage(hwnd, WM_UPDATE_HITS, index, hits);
+}
+
+void HitDialog::insertRow(char* instruction)
+{
+	PostMessage(hwnd, WM_UPDATE_INSERT_ROW, (WPARAM)instruction, NULL);
 }

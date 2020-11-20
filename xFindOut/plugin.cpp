@@ -1,6 +1,8 @@
 #include "plugin.h"
 #include <TlHelp32.h>
 
+#include "resource.h"
+
 enum
 {
     MENU,
@@ -17,47 +19,54 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
     switch(info->hEntry)
     {
     case DUMP:
+    {
+
+    }
+    break;
     default:
         break;
     }
 }
-
-struct BreakpointHit
-{
-    int hits = 0;
-    duint previousInstruction = 0;
-    char disassembly[256] = { 0 };
-    char regDump[1024] = { 0 };
-};
-
-std::unordered_map<duint, BreakpointHit> hitsMap;
-duint currAddy;
 
 PLUG_EXPORT void CBBREAKPOINT(CBTYPE cbType, PLUG_CB_BREAKPOINT* info)
 {
     if (info->breakpoint->type != bp_hardware)
         return;
 
+    StateManager& state = StateManager::getInstance();
+
     duint cip = GetContextData(UE_CIP);
 
-    if (!hitsMap[cip].hits)
+    if (!state.isControlledByThisPlugin(info->breakpoint->addr))
+        return;
+
+    int index = state.wasThisInstructionHitBefore(info->breakpoint->addr, cip);
+    if (index == -1)
     {
-        char previousCommand[128];
-        sprintf_s(previousCommand, "dis.prev(%p)", cip);
-        duint previousInstructionAddress = DbgEval(previousCommand);
-        hitsMap[cip].previousInstruction = previousInstructionAddress;
-        GuiGetDisassembly(previousInstructionAddress, hitsMap[cip].disassembly);
+        char buffer[32];
+        HitEntry hitEntry;
+        std::memset(&hitEntry, 0, sizeof(hitEntry));
+        sprintf_s(buffer, "dis.prev(%p)", cip);
+        duint previousInstructionAddress = DbgEval(buffer);
+        hitEntry.instructionAddress = previousInstructionAddress;
+        hitEntry.hittedAtAddress = cip;
+
+        char disassembly[128];
+        GuiGetDisassembly(previousInstructionAddress, disassembly);
+        snprintf(hitEntry.instruction, sizeof(hitEntry.instruction), "%X - %s", hitEntry.instructionAddress, disassembly);
 
         REGDUMP regdump;
         DbgGetRegDumpEx(&regdump, sizeof(regdump));
 
-        sprintf_s(hitsMap[cip].regDump, "EAX=%p\nEBX=%p\nECX=%p\nEDX=%p\nEBP=%p\nESP=%p\nESI=%p\nEDI=%p\nEIP=%p\n",
-            regdump.regcontext.cax, regdump.regcontext.cbp, regdump.regcontext.ccx, regdump.regcontext.cdx, regdump.regcontext.cbp, regdump.regcontext.csp, 
+        snprintf(hitEntry.info, sizeof(hitEntry.info), "EAX=%p\nEBX=%p\nECX=%p\nEDX=%p\nEBP=%p\nESP=%p\nESI=%p\nEDI=%p\nEIP=%p\n",
+            regdump.regcontext.cax, regdump.regcontext.cbp, regdump.regcontext.ccx, regdump.regcontext.cdx, regdump.regcontext.cbp, regdump.regcontext.csp,
             regdump.regcontext.csi, regdump.regcontext.cdi, regdump.regcontext.cip);
 
+        state.addNewInstructionHit(info->breakpoint->addr, hitEntry);
     }
 
-    hitsMap[cip].hits++;
+    else
+        state.updateHits(info->breakpoint->addr, index);
 }
 
 static bool findOut(int argc, char* argv[])
@@ -65,8 +74,9 @@ static bool findOut(int argc, char* argv[])
     if (argc < 2)
         return false;
 
-    currAddy = DbgEval(argv[1]);
-    hitsMap.clear();
+    duint currAddy = DbgEval(argv[1]);
+
+    StateManager::getInstance().addEntry(currAddy);
 
     char command[128] = "";
     sprintf_s(command, "bph %p, r", currAddy);
@@ -83,10 +93,11 @@ static bool findOut(int argc, char* argv[])
 static bool findOutStop(int argc, char* argv[])
 {
     char command[128] = "";
+    duint currAddy = DbgEval(argv[1]);
     sprintf_s(command, "bphc %p", currAddy);
     DbgCmdExecDirect(command);
-    for (const auto& value : hitsMap)
-        _plugin_logprintf("Address %p, %s, hits: %d\n%s\n\n\n", value.second.previousInstruction, value.second.disassembly, value.second.hits, value.second.regDump);
+    //for (const auto& value : hitsMap)
+    //    _plugin_logprintf("Address %p, %s, hits: %d\n%s\n\n\n", value.second.previousInstruction, value.second.disassembly, value.second.hits, value.second.regDump);
     
     currAddy = 0;
 
@@ -114,3 +125,12 @@ void pluginSetup()
 {
     _plugin_menuaddentry(hMenu, DUMP, "&xFindOut");
 }
+
+BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
+{
+    if (fdwReason == DLL_PROCESS_ATTACH)
+        StateManager::getInstance().setHInstance(hinstDLL);
+
+    return TRUE;
+}
+

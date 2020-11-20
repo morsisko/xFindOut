@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pluginmain.h"
+#include "StateManager.h"
 
 //plugin data
 #define PLUGIN_NAME "xFindOut"

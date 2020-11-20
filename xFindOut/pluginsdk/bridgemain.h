@@ -1118,6 +1118,7 @@ typedef enum
 struct _TYPEDESCRIPTOR;
 
 typedef void (*GUICALLBACK)();
+typedef void (*GUICALLBACKEX)(void*);
 typedef bool (*GUISCRIPTEXECUTE)(const char* text);
 typedef void (*GUISCRIPTCOMPLETER)(const char* text, char** entries, int* entryCount);
 typedef bool (*TYPETOSTRING)(const struct _TYPEDESCRIPTOR* type, char* dest, size_t* destCount); //don't change destCount for final failure
@@ -1286,6 +1287,12 @@ BRIDGE_IMPEXP void GuiUpdateTypeWidget();
 BRIDGE_IMPEXP void GuiCloseApplication();
 BRIDGE_IMPEXP void GuiFlushLog();
 BRIDGE_IMPEXP void GuiReferenceAddCommand(const char* title, const char* command);
+BRIDGE_IMPEXP void GuiUpdateTraceBrowser();
+BRIDGE_IMPEXP void GuiOpenTraceFile(const char* fileName);
+BRIDGE_IMPEXP void GuiInvalidateSymbolSource(duint base);
+BRIDGE_IMPEXP void GuiExecuteOnGuiThreadEx(GUICALLBACKEX cbGuiThread, void* userdata);
+BRIDGE_IMPEXP void GuiGetCurrentGraph(void* graphList);
+BRIDGE_IMPEXP void GuiShowReferences();
 
 #ifdef __cplusplus
 }
