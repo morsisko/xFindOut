@@ -18,4 +18,5 @@ public:
 	void hit(int index);
 	void addNew(HitEntry& hitEntry);
 	HWND getDialog();
+	void debugLog();
 };

@@ -46,6 +46,8 @@ PLUG_EXPORT void CBBREAKPOINT(CBTYPE cbType, PLUG_CB_BREAKPOINT* info)
         char buffer[32];
         HitEntry hitEntry;
         std::memset(&hitEntry, 0, sizeof(hitEntry));
+        hitEntry.hits = 1;
+
         sprintf_s(buffer, "dis.prev(%p)", cip);
         duint previousInstructionAddress = DbgEval(buffer);
         hitEntry.instructionAddress = previousInstructionAddress;
@@ -96,10 +98,8 @@ static bool findOutStop(int argc, char* argv[])
     duint currAddy = DbgEval(argv[1]);
     sprintf_s(command, "bphc %p", currAddy);
     DbgCmdExecDirect(command);
-    //for (const auto& value : hitsMap)
-    //    _plugin_logprintf("Address %p, %s, hits: %d\n%s\n\n\n", value.second.previousInstruction, value.second.disassembly, value.second.hits, value.second.regDump);
     
-    currAddy = 0;
+    StateManager::getInstance().debugLog();
 
     return true;
 }

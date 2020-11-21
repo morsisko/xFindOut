@@ -1,4 +1,5 @@
 #include "FindOutEntry.h"
+#include "pluginsdk/_plugins.h"
 
 FindOutEntry::FindOutEntry(duint breakpointAddress) :
     breakpointAddress(breakpointAddress),
@@ -42,4 +43,10 @@ void FindOutEntry::addNew(HitEntry& hitEntry)
 HWND FindOutEntry::getDialog()
 {
     return dialog.getHWND();
+}
+
+void FindOutEntry::debugLog()
+{
+    for (const auto& hit : hits)
+        _plugin_logprintf("Address %p, %s, hits: %d\n%s\n\n\n", hit->instructionAddress, hit->instruction, hit->hits, hit->info);
 }

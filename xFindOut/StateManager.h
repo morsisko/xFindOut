@@ -19,5 +19,6 @@ public:
 	bool addEntry(duint breakpointAddress);
 	void setHInstance(HINSTANCE instance);
 	HINSTANCE getHInstance();
+	void debugLog();
 };
 

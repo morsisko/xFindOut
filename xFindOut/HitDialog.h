@@ -4,7 +4,7 @@
 #include "pluginsdk/bridgemain.h"
 
 #define WM_UPDATE_HITS WM_USER+1
-#define WM_UPDATE_INSERT_ROW WM_USER+2
+#define WM_UPDATE_INSERT_ROW WM_USER+20
 
 class HitDialog
 {

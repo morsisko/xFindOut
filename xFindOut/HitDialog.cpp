@@ -1,6 +1,7 @@
 #include "HitDialog.h"
 #include "resource.h"
 #include "StateManager.h"
+#include "pluginsdk/_plugins.h"
 
 const char* hits = "Hits";
 const char* instruction = "Instruction";
@@ -77,6 +78,8 @@ INT_PTR CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 void spawnDialog(void* userdata)
 {
+	HANDLE event = CreateEvent(NULL, TRUE, FALSE, TEXT("WaitForDialogEvent"));
+
 	HitDialog* hitDialog = static_cast<HitDialog*>(userdata);
 
 	HWND hwnd = CreateDialog(StateManager::getInstance().getHInstance(), MAKEINTRESOURCE(IDD_DIALOG_HITS), GuiGetWindowHandle(), DialogProc);
@@ -86,12 +89,18 @@ void spawnDialog(void* userdata)
 	snprintf(windowName, sizeof(windowName), "Find out what accesses %X address", hitDialog->getAddress());
 	SetWindowText(hwnd, windowName);
 	ShowWindow(hwnd, SW_SHOW);
+
+	SetEvent(event);
+	CloseHandle(event);
 }
 
 HitDialog::HitDialog(duint address) :
 	address(address)
 {
+	HANDLE event = CreateEvent(NULL, TRUE, FALSE, TEXT("WaitForDialogEvent"));
 	GuiExecuteOnGuiThreadEx(spawnDialog, this);
+	WaitForSingleObject(event, INFINITE);
+	CloseHandle(event);
 }
 
 void HitDialog::setHWND(HWND hwnd)

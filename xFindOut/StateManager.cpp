@@ -66,3 +66,9 @@ HINSTANCE StateManager::getHInstance()
 {
     return instance;
 }
+
+void StateManager::debugLog()
+{
+    for (const auto& entry : entries)
+        entry->debugLog();
+}
