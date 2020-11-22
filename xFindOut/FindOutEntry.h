@@ -19,4 +19,5 @@ public:
 	void addNew(HitEntry& hitEntry);
 	HWND getDialog();
 	void debugLog();
+	char* getInfoByIndex(int index);
 };

@@ -36,6 +36,27 @@ INT_PTR CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 		ListView_SetColumnWidth(listView, 1, LVSCW_AUTOSIZE_USEHEADER);
 	}
 	break;
+	case WM_NOTIFY:
+	{
+		switch (((LPNMHDR)lParam)->code)
+		{
+		case LVN_ITEMACTIVATE:
+			if (((LPNMHDR)lParam)->idFrom == IDC_HITS_TABLE)
+			{
+				LRESULT id = ListView_GetSelectionMark(((LPNMHDR)lParam)->hwndFrom);
+
+				char* info = StateManager::getInstance().getInfoByHwndAndIndex(hwndDlg, id);
+
+				if (info != nullptr)
+					SetWindowText(GetDlgItem(hwndDlg, IDC_CONTEXT_TEXT), info);
+					//SendMessageA(((LPNMHDR)lParam)->hwndFrom, WM_SETTEXT, NULL, (LPARAM)info);
+
+				return TRUE;
+			}
+			break;
+		}
+		break;
+	}
 	case WM_UPDATE_HITS:
 	{
 		int indexToUpdate = wParam;

@@ -50,3 +50,11 @@ void FindOutEntry::debugLog()
     for (const auto& hit : hits)
         _plugin_logprintf("Address %p, %s, hits: %d\n%s\n\n\n", hit->instructionAddress, hit->instruction, hit->hits, hit->info);
 }
+
+char* FindOutEntry::getInfoByIndex(int index)
+{
+    if (index < 0 || index >= hits.size())
+        return nullptr;
+
+    return hits[index]->info;
+}

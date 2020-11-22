@@ -72,3 +72,15 @@ void StateManager::debugLog()
     for (const auto& entry : entries)
         entry->debugLog();
 }
+
+char* StateManager::getInfoByHwndAndIndex(HWND hwnd, int index)
+{
+    auto it = std::find_if(entries.begin(), entries.end(), [hwnd](const auto& entry) {
+        return entry->getDialog() == hwnd;
+    });
+
+    if (it == entries.end())
+        return nullptr;
+
+    return it->get()->getInfoByIndex(index);
+}

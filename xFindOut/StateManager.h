@@ -20,5 +20,6 @@ public:
 	void setHInstance(HINSTANCE instance);
 	HINSTANCE getHInstance();
 	void debugLog();
+	char* getInfoByHwndAndIndex(HWND hwnd, int index);
 };
 
