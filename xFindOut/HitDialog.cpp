@@ -43,7 +43,7 @@ INT_PTR CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 		case NM_CLICK:
 			if (((LPNMITEMACTIVATE)lParam)->hdr.idFrom == IDC_HITS_TABLE)
 			{
-				LRESULT id = ListView_GetSelectionMark(((LPNMHDR)lParam)->hwndFrom);
+				LRESULT id = ListView_GetSelectionMark(((LPNMITEMACTIVATE)lParam)->hdr.hwndFrom);
 
 				char* info = StateManager::getInstance().getInfoByHwndAndIndex(hwndDlg, id);
 
