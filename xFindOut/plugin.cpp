@@ -60,7 +60,7 @@ PLUG_EXPORT void CBBREAKPOINT(CBTYPE cbType, PLUG_CB_BREAKPOINT* info)
         REGDUMP regdump;
         DbgGetRegDumpEx(&regdump, sizeof(regdump));
 
-        snprintf(hitEntry.info, sizeof(hitEntry.info), "EAX=%p\nEBX=%p\nECX=%p\nEDX=%p\nEBP=%p\nESP=%p\nESI=%p\nEDI=%p\nEIP=%p\n",
+        snprintf(hitEntry.info, sizeof(hitEntry.info), "EAX=%p\r\nEBX=%p\r\nECX=%p\r\nEDX=%p\r\nEBP=%p\r\nESP=%p\r\nESI=%p\r\nEDI=%p\r\nEIP=%p\r\n",
             regdump.regcontext.cax, regdump.regcontext.cbp, regdump.regcontext.ccx, regdump.regcontext.cdx, regdump.regcontext.cbp, regdump.regcontext.csp,
             regdump.regcontext.csi, regdump.regcontext.cdi, regdump.regcontext.cip);
 

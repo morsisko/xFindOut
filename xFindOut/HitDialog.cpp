@@ -38,10 +38,10 @@ INT_PTR CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 	break;
 	case WM_NOTIFY:
 	{
-		switch (((LPNMHDR)lParam)->code)
+		switch (((LPNMITEMACTIVATE)lParam)->hdr.code)
 		{
-		case LVN_ITEMACTIVATE:
-			if (((LPNMHDR)lParam)->idFrom == IDC_HITS_TABLE)
+		case NM_CLICK:
+			if (((LPNMITEMACTIVATE)lParam)->hdr.idFrom == IDC_HITS_TABLE)
 			{
 				LRESULT id = ListView_GetSelectionMark(((LPNMHDR)lParam)->hwndFrom);
 
@@ -49,7 +49,6 @@ INT_PTR CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 				if (info != nullptr)
 					SetWindowText(GetDlgItem(hwndDlg, IDC_CONTEXT_TEXT), info);
-					//SendMessageA(((LPNMHDR)lParam)->hwndFrom, WM_SETTEXT, NULL, (LPARAM)info);
 
 				return TRUE;
 			}
