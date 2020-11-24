@@ -94,10 +94,15 @@ static bool findOut(int argc, char* argv[])
 
 static bool findOutStop(int argc, char* argv[])
 {
-    char command[128] = "";
+    char command[128] = { 0 };
     duint currAddy = DbgEval(argv[1]);
+    sprintf_s(command, "bphwcond %p, 1 %p", currAddy);
+    DbgCmdExecDirect(command);
+    Sleep(10);
     sprintf_s(command, "bphc %p", currAddy);
     DbgCmdExecDirect(command);
+    Sleep(10);
+    DbgCmdExecDirect("r");
     
     StateManager::getInstance().debugLog();
 
