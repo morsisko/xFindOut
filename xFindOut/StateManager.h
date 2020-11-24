@@ -21,5 +21,6 @@ public:
 	HINSTANCE getHInstance();
 	void debugLog();
 	char* getInfoByHwndAndIndex(HWND hwnd, int index);
+	duint getInstructionAddressByHwndAndIndex(HWND hwnd, int index);
 };
 

@@ -40,22 +40,54 @@ INT_PTR CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 	{
 		switch (((LPNMITEMACTIVATE)lParam)->hdr.code)
 		{
-		case NM_CLICK:
-			if (((LPNMITEMACTIVATE)lParam)->hdr.idFrom == IDC_HITS_TABLE)
+			case NM_CLICK:
 			{
-				LRESULT id = ListView_GetSelectionMark(((LPNMITEMACTIVATE)lParam)->hdr.hwndFrom);
+				if (((LPNMITEMACTIVATE)lParam)->hdr.idFrom == IDC_HITS_TABLE)
+				{
+					LRESULT id = ListView_GetSelectionMark(((LPNMITEMACTIVATE)lParam)->hdr.hwndFrom);
 
-				char* info = StateManager::getInstance().getInfoByHwndAndIndex(hwndDlg, id);
+					char* info = StateManager::getInstance().getInfoByHwndAndIndex(hwndDlg, id);
 
-				if (info != nullptr)
-					SetWindowText(GetDlgItem(hwndDlg, IDC_CONTEXT_TEXT), info);
+					if (info != nullptr)
+						SetWindowText(GetDlgItem(hwndDlg, IDC_CONTEXT_TEXT), info);
 
-				return TRUE;
+					return TRUE;
+				}
 			}
 			break;
 		}
-		break;
 	}
+	break;
+	case WM_COMMAND:
+	{
+		switch (HIWORD(wParam))
+		{
+			case BN_CLICKED:
+			{
+				switch (LOWORD(wParam))
+				{
+					case IDC_FOLLOW_CPU:
+					{
+						LRESULT id = ListView_GetSelectionMark(GetDlgItem(hwndDlg, IDC_HITS_TABLE));
+						if (id == -1)
+							return FALSE;
+
+						duint address = StateManager::getInstance().getInstructionAddressByHwndAndIndex(hwndDlg, id);
+
+						if (!address)
+							return FALSE;
+
+						char buffer[32];
+						snprintf(buffer, sizeof(buffer), "d %X", address);
+						DbgCmdExec(buffer);
+					}
+					break;
+				}
+			}
+			break;
+		}
+	}
+	break;
 	case WM_UPDATE_HITS:
 	{
 		int indexToUpdate = wParam;

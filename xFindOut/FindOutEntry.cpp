@@ -58,3 +58,11 @@ char* FindOutEntry::getInfoByIndex(int index)
 
     return hits[index]->info;
 }
+
+duint FindOutEntry::getInstructionAddressByIndex(int index)
+{
+    if (index < 0 || index >= hits.size())
+        return 0;
+
+    return hits[index]->instructionAddress;
+}

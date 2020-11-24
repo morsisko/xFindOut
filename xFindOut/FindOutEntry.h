@@ -20,4 +20,5 @@ public:
 	HWND getDialog();
 	void debugLog();
 	char* getInfoByIndex(int index);
+	duint getInstructionAddressByIndex(int index);
 };

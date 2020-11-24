@@ -96,6 +96,8 @@ static bool findOutStop(int argc, char* argv[])
 {
     char command[128] = { 0 };
     duint currAddy = DbgEval(argv[1]);
+
+    //tricky solution to bypass x64dbg bug
     sprintf_s(command, "bphwcond %p, 1 %p", currAddy);
     DbgCmdExecDirect(command);
     Sleep(10);

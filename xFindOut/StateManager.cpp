@@ -84,3 +84,15 @@ char* StateManager::getInfoByHwndAndIndex(HWND hwnd, int index)
 
     return it->get()->getInfoByIndex(index);
 }
+
+duint StateManager::getInstructionAddressByHwndAndIndex(HWND hwnd, int index)
+{
+    auto it = std::find_if(entries.begin(), entries.end(), [hwnd](const auto& entry) {
+        return entry->getDialog() == hwnd;
+        });
+
+    if (it == entries.end())
+        return 0;
+
+    return it->get()->getInstructionAddressByIndex(index);
+}
