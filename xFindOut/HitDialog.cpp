@@ -13,6 +13,7 @@ INT_PTR CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 	{
 	case WM_CLOSE:
 	{
+		StateManager::getInstance().deleteEntry(hwndDlg);
 		DestroyWindow(hwndDlg);
 		return true;
 	}

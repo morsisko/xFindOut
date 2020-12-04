@@ -58,6 +58,13 @@ bool StateManager::addEntry(duint breakpointAddress)
     if (getEntryIteratorByBreakpointAddress(breakpointAddress) != entries.end())
         return false;
 
+    char command[128] = "";
+    sprintf_s(command, "bph %p, r", breakpointAddress);
+    DbgCmdExecDirect(command);
+
+    sprintf_s(command, "bphwcond %p, 0", breakpointAddress);
+    DbgCmdExecDirect(command);
+
     entries.push_back(std::make_unique<FindOutEntry>(breakpointAddress));
     return true;
 }
@@ -95,4 +102,38 @@ duint StateManager::getInstructionAddressByHwndAndIndex(HWND hwnd, int index)
         return 0;
 
     return it->get()->getInstructionAddressByIndex(index);
+}
+
+bool StateManager::sendCloseMessageByAddress(duint breakpointAddress)
+{
+    auto it = getEntryIteratorByBreakpointAddress(breakpointAddress);
+
+    if (it == entries.end())
+        return false;
+
+    SendMessage(it->get()->getDialog(), WM_CLOSE, 0, 0);
+    return true;
+}
+
+bool StateManager::deleteEntry(HWND hwnd)
+{
+    auto it = std::find_if(entries.begin(), entries.end(), [hwnd](const auto& entry) {
+        return entry->getDialog() == hwnd;
+        });
+
+    if (it == entries.end())
+        return false;
+
+    //tricky solution to bypass x64dbg bug
+    char command[128];
+    sprintf_s(command, "bphwcond %p, 1 %p", it->get()->getBreakpointAddress());
+    DbgCmdExecDirect(command);
+    Sleep(10);
+    sprintf_s(command, "bphc %p", it->get()->getBreakpointAddress());
+    DbgCmdExecDirect(command);
+    Sleep(10);
+    DbgCmdExec("r");
+
+    entries.erase(it);
+    return true;
 }

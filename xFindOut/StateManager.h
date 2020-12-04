@@ -22,5 +22,7 @@ public:
 	void debugLog();
 	char* getInfoByHwndAndIndex(HWND hwnd, int index);
 	duint getInstructionAddressByHwndAndIndex(HWND hwnd, int index);
+	bool sendCloseMessageByAddress(duint breakpointAddress);
+	bool deleteEntry(HWND hwnd);
 };
 

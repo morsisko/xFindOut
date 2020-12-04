@@ -1,7 +1,10 @@
 #include "plugin.h"
 #include <TlHelp32.h>
+#include <chrono>
 
 #include "resource.h"
+
+std::chrono::steady_clock::time_point lastEntryCreation;
 
 enum
 {
@@ -12,6 +15,13 @@ enum
 PLUG_EXPORT void CBSTOPDEBUG(CBTYPE cbType, PLUG_CB_STOPDEBUG* info)
 {
     dputs("Debugging stopped!");
+}
+
+PLUG_EXPORT void CBPAUSEDEBUG(CBTYPE cbType, PLUG_CB_PAUSEDEBUG* info)
+{
+    auto now = std::chrono::steady_clock::now();
+    if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastEntryCreation).count() < 50)
+        DbgCmdExec("r");
 }
 
 PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
@@ -78,18 +88,18 @@ static bool findOut(int argc, char* argv[])
 
     duint currAddy = DbgEval(argv[1]);
 
-    StateManager::getInstance().addEntry(currAddy);
+    bool result = StateManager::getInstance().addEntry(currAddy);
+    lastEntryCreation = std::chrono::steady_clock::now();
+    
+    if (result)
+    {
+        _plugin_logprintf("Added new entry at %p\n", currAddy);
+        return true;
+    }
 
-    char command[128] = "";
-    sprintf_s(command, "bph %p, r", currAddy);
-    DbgCmdExecDirect(command);
 
-    sprintf_s(command, "bphwcond %p, 0", currAddy);
-    _plugin_logputs(command);
-    _plugin_logputs("\n");
-    DbgCmdExecDirect(command);
-
-    return true;
+    _plugin_logprintf("Couldn't create new entry at %p\n", currAddy);
+    return false;
 }
 
 static bool findOutStop(int argc, char* argv[])
@@ -97,16 +107,12 @@ static bool findOutStop(int argc, char* argv[])
     char command[128] = { 0 };
     duint currAddy = DbgEval(argv[1]);
 
-    //tricky solution to bypass x64dbg bug
-    sprintf_s(command, "bphwcond %p, 1 %p", currAddy);
-    DbgCmdExecDirect(command);
-    Sleep(10);
-    sprintf_s(command, "bphc %p", currAddy);
-    DbgCmdExecDirect(command);
-    Sleep(10);
-    DbgCmdExecDirect("r");
-    
-    StateManager::getInstance().debugLog();
+    bool result = StateManager::getInstance().sendCloseMessageByAddress(currAddy);
+
+    if (result)
+        _plugin_logprintf("Entry %p has been deleted\n", currAddy);
+    else
+        _plugin_logprintf("Could NOT delete entry %p\n", currAddy);
 
     return true;
 }
