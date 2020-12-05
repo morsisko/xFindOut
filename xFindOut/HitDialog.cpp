@@ -87,6 +87,17 @@ INT_PTR CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 					case IDC_STOP_BUTTON:
 					{
 						HWND buttonHwnd = (HWND)lParam;
+
+						const char* buttonSecondCaption = "Close";
+						char currentButtonCaption[32];
+						GetWindowText(buttonHwnd, currentButtonCaption, sizeof(currentButtonCaption));
+
+						if (!strcmp(currentButtonCaption, buttonSecondCaption))
+						{
+							PostMessage(hwndDlg, WM_CLOSE, 0, 0);
+							return false;
+						}
+
 						StateManager::getInstance().disableEntry(hwndDlg);
 						SetWindowText(buttonHwnd, "Close");
 					}
@@ -146,8 +157,13 @@ void spawnDialog(void* userdata)
 	HWND hwnd = CreateDialog(StateManager::getInstance().getHInstance(), MAKEINTRESOURCE(IDD_DIALOG_HITS), GuiGetWindowHandle(), DialogProc);
 	hitDialog->setHWND(hwnd);
 
+	const char* typeStr = "accesses";
+
+	if (hitDialog->isWriteEntryDlg())
+		typeStr = "writes to";
+
 	char windowName[64];
-	snprintf(windowName, sizeof(windowName), "Find out what accesses %X address", hitDialog->getAddress());
+	snprintf(windowName, sizeof(windowName), "Find out what %s %X address", typeStr, hitDialog->getAddress());
 	SetWindowText(hwnd, windowName);
 	ShowWindow(hwnd, SW_SHOW);
 
@@ -155,8 +171,9 @@ void spawnDialog(void* userdata)
 	CloseHandle(event);
 }
 
-HitDialog::HitDialog(duint address) :
-	address(address)
+HitDialog::HitDialog(duint address, bool isWriteEntry) :
+	address(address),
+	writeEntry(isWriteEntry)
 {
 	HANDLE event = CreateEvent(NULL, TRUE, FALSE, TEXT("WaitForDialogEvent"));
 	GuiExecuteOnGuiThreadEx(spawnDialog, this);
@@ -187,4 +204,9 @@ void HitDialog::updateHits(int index, int hits)
 void HitDialog::insertRow(char* instruction)
 {
 	PostMessage(hwnd, WM_UPDATE_INSERT_ROW, (WPARAM)instruction, NULL);
+}
+
+bool HitDialog::isWriteEntryDlg()
+{
+	return writeEntry;
 }

@@ -9,17 +9,40 @@ std::chrono::steady_clock::time_point lastEntryCreation;
 enum
 {
     MENU,
-    DUMP
+    DUMP_ACCESS,
+    DUMP_WRITE
 };
+
+static bool addFindOutEntry(duint address, bool onWrite)
+{
+    lastEntryCreation = std::chrono::steady_clock::now();
+    bool result = StateManager::getInstance().addEntry(address, onWrite);
+
+    if (result)
+    {
+        _plugin_logprintf("Added new entry at %p\n", address);
+        return true;
+    }
+
+    _plugin_logprintf("Couldn't create new entry at %p\n", address);
+    return false;
+}
+
+static duint GetSelectionStart()
+{
+    SELECTIONDATA sel;
+    GuiSelectionGet(GUI_DUMP, &sel);
+
+    return sel.start;
+}
 
 PLUG_EXPORT void CBSTOPDEBUG(CBTYPE cbType, PLUG_CB_STOPDEBUG* info)
 {
-    dputs("Debugging stopped!");
+    ;
 }
 
 PLUG_EXPORT void CBPAUSEDEBUG(CBTYPE cbType, PLUG_CB_PAUSEDEBUG* info)
 {
-    dputs("Debugging paused!");
     auto now = std::chrono::steady_clock::now();
     if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastEntryCreation).count() < 50)
         DbgCmdExec("r");
@@ -29,9 +52,22 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
 {
     switch(info->hEntry)
     {
-    case DUMP:
+    case DUMP_ACCESS:
     {
+        auto sel = GetSelectionStart();
+        if (!sel)
+            return;
 
+        addFindOutEntry(sel, false);
+    }
+    break;
+    case DUMP_WRITE:
+    {
+        auto sel = GetSelectionStart();
+        if (!sel)
+            return;
+
+        addFindOutEntry(sel, true);
     }
     break;
     default:
@@ -88,19 +124,9 @@ static bool findOut(int argc, char* argv[])
         return false;
 
     duint currAddy = DbgEval(argv[1]);
+    addFindOutEntry(currAddy, false);
 
-    bool result = StateManager::getInstance().addEntry(currAddy);
-    lastEntryCreation = std::chrono::steady_clock::now();
-    
-    if (result)
-    {
-        _plugin_logprintf("Added new entry at %p\n", currAddy);
-        return true;
-    }
-
-
-    _plugin_logprintf("Couldn't create new entry at %p\n", currAddy);
-    return false;
+    return true;
 }
 
 static bool findOutStop(int argc, char* argv[])
@@ -137,7 +163,8 @@ void pluginStop()
 //Do GUI/Menu related things here.
 void pluginSetup()
 {
-    _plugin_menuaddentry(hMenu, DUMP, "&xFindOut");
+    _plugin_menuaddentry(hMenuDump, DUMP_ACCESS, "&Find out what accesses this address");
+    _plugin_menuaddentry(hMenuDump, DUMP_WRITE, "&Find out what writes to this address");
 }
 
 BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)

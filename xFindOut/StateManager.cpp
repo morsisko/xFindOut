@@ -53,19 +53,23 @@ void StateManager::addNewInstructionHit(duint breakpointAddress, HitEntry& hitEn
     it->get()->addNew(hitEntry);
 }
 
-bool StateManager::addEntry(duint breakpointAddress)
+bool StateManager::addEntry(duint breakpointAddress, bool onWrite)
 {
     if (getEntryIteratorByBreakpointAddress(breakpointAddress) != entries.end())
         return false;
 
     char command[128] = "";
-    sprintf_s(command, "bph %p, r", breakpointAddress);
+    char type = 'r';
+    if (onWrite)
+        type = 'w';
+
+    sprintf_s(command, "bph %p, %c", breakpointAddress, type);
     DbgCmdExecDirect(command);
 
     sprintf_s(command, "bphwcond %p, 0", breakpointAddress);
     DbgCmdExecDirect(command);
 
-    entries.push_back(std::make_unique<FindOutEntry>(breakpointAddress));
+    entries.push_back(std::make_unique<FindOutEntry>(breakpointAddress, onWrite));
     return true;
 }
 

@@ -16,7 +16,7 @@ public:
 	int wasThisInstructionHitBefore(duint breakpointAddress, duint instructionAddress);
 	void updateHits(duint breakpointAddress, int index);
 	void addNewInstructionHit(duint breakpointAddress, HitEntry& hitEntry);
-	bool addEntry(duint breakpointAddress);
+	bool addEntry(duint breakpointAddress, bool onWrite);
 	void setHInstance(HINSTANCE instance);
 	HINSTANCE getHInstance();
 	void debugLog();

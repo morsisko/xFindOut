@@ -1,9 +1,9 @@
 #include "FindOutEntry.h"
 #include "pluginsdk/_plugins.h"
 
-FindOutEntry::FindOutEntry(duint breakpointAddress) :
+FindOutEntry::FindOutEntry(duint breakpointAddress, bool isWriteEntry) :
     breakpointAddress(breakpointAddress),
-    dialog(breakpointAddress),
+    dialog(breakpointAddress, isWriteEntry),
     enabled(true)
 {
 

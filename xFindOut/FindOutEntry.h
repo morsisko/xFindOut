@@ -13,7 +13,7 @@ private:
 	HitDialog dialog;
 	bool enabled;
 public:
-	FindOutEntry(duint breakpointAddress);
+	FindOutEntry(duint breakpointAddress, bool isWriteEntry);
 	duint getBreakpointAddress();
 	int wasHitBefore(duint cip);
 	void hit(int index);

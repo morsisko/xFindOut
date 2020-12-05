@@ -11,12 +11,14 @@ class HitDialog
 private:
 	HWND hwnd;
 	duint address;
+	bool writeEntry;
 public:
-	HitDialog(duint address);
+	HitDialog(duint address, bool isWriteEntry);
 	void setHWND(HWND hwnd);
 	HWND getHWND();
 	duint getAddress();
 	void updateHits(int index, int hits);
 	void insertRow(char* instruction);
+	bool isWriteEntryDlg();
 };
 
