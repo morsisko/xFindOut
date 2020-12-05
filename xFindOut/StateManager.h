@@ -24,5 +24,6 @@ public:
 	duint getInstructionAddressByHwndAndIndex(HWND hwnd, int index);
 	bool sendCloseMessageByAddress(duint breakpointAddress);
 	bool deleteEntry(HWND hwnd);
+	bool disableEntry(HWND hwnd);
 };
 

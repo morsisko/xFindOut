@@ -83,6 +83,14 @@ INT_PTR CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 						DbgCmdExec(buffer);
 					}
 					break;
+
+					case IDC_STOP_BUTTON:
+					{
+						HWND buttonHwnd = (HWND)lParam;
+						StateManager::getInstance().disableEntry(hwndDlg);
+						SetWindowText(buttonHwnd, "Close");
+					}
+					break;
 				}
 			}
 			break;

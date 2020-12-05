@@ -3,7 +3,8 @@
 
 FindOutEntry::FindOutEntry(duint breakpointAddress) :
     breakpointAddress(breakpointAddress),
-    dialog(breakpointAddress)
+    dialog(breakpointAddress),
+    enabled(true)
 {
 
 }
@@ -65,4 +66,23 @@ duint FindOutEntry::getInstructionAddressByIndex(int index)
         return 0;
 
     return hits[index]->instructionAddress;
+}
+
+bool FindOutEntry::isEnabled()
+{
+    return enabled;
+}
+
+void FindOutEntry::disable()
+{
+    this->enabled = false;
+    //tricky solution to bypass x64dbg bug
+    char command[128];
+    sprintf_s(command, "bphwcond %p, 1 %p", breakpointAddress);
+    DbgCmdExecDirect(command);
+    Sleep(10);
+    sprintf_s(command, "bphc %p", breakpointAddress);
+    DbgCmdExecDirect(command);
+    Sleep(10);
+    DbgCmdExec("r");
 }

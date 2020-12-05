@@ -19,6 +19,7 @@ PLUG_EXPORT void CBSTOPDEBUG(CBTYPE cbType, PLUG_CB_STOPDEBUG* info)
 
 PLUG_EXPORT void CBPAUSEDEBUG(CBTYPE cbType, PLUG_CB_PAUSEDEBUG* info)
 {
+    dputs("Debugging paused!");
     auto now = std::chrono::steady_clock::now();
     if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastEntryCreation).count() < 50)
         DbgCmdExec("r");

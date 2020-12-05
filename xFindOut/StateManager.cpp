@@ -3,7 +3,7 @@
 auto StateManager::getEntryIteratorByBreakpointAddress(duint breakpointAddress)
 {
     return std::find_if(entries.begin(), entries.end(), [breakpointAddress](const auto& entry) {
-        return entry->getBreakpointAddress() == breakpointAddress;
+        return entry->getBreakpointAddress() == breakpointAddress && entry->isEnabled();
     });
 }
 
@@ -124,16 +124,25 @@ bool StateManager::deleteEntry(HWND hwnd)
     if (it == entries.end())
         return false;
 
-    //tricky solution to bypass x64dbg bug
-    char command[128];
-    sprintf_s(command, "bphwcond %p, 1 %p", it->get()->getBreakpointAddress());
-    DbgCmdExecDirect(command);
-    Sleep(10);
-    sprintf_s(command, "bphc %p", it->get()->getBreakpointAddress());
-    DbgCmdExecDirect(command);
-    Sleep(10);
-    DbgCmdExec("r");
+    if (it->get()->isEnabled())
+        it->get()->disable();
 
     entries.erase(it);
+    return true;
+}
+
+bool StateManager::disableEntry(HWND hwnd)
+{
+    auto it = std::find_if(entries.begin(), entries.end(), [hwnd](const auto& entry) {
+        return entry->getDialog() == hwnd;
+        });
+
+    if (it == entries.end())
+        return false;
+
+    if (!it->get()->isEnabled())
+        return false;
+
+    it->get()->disable();
     return true;
 }

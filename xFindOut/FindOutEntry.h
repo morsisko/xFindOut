@@ -11,6 +11,7 @@ private:
 	duint breakpointAddress;
 	std::vector<std::unique_ptr<HitEntry>> hits;
 	HitDialog dialog;
+	bool enabled;
 public:
 	FindOutEntry(duint breakpointAddress);
 	duint getBreakpointAddress();
@@ -21,4 +22,6 @@ public:
 	void debugLog();
 	char* getInfoByIndex(int index);
 	duint getInstructionAddressByIndex(int index);
+	bool isEnabled();
+	void disable();
 };
