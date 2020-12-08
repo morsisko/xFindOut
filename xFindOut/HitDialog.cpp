@@ -79,7 +79,7 @@ INT_PTR CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 							return FALSE;
 
 						char buffer[32];
-						snprintf(buffer, sizeof(buffer), "d %X", address);
+						snprintf(buffer, sizeof(buffer), "d %p", address);
 						DbgCmdExec(buffer);
 					}
 					break;
@@ -100,6 +100,12 @@ INT_PTR CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 						StateManager::getInstance().disableEntry(hwndDlg);
 						SetWindowText(buttonHwnd, "Close");
+					}
+					break;
+
+					case IDC_COPY_ADDRESS:
+					{
+						;
 					}
 					break;
 				}
@@ -163,7 +169,7 @@ void spawnDialog(void* userdata)
 		typeStr = "writes to";
 
 	char windowName[64];
-	snprintf(windowName, sizeof(windowName), "Find out what %s %X address", typeStr, hitDialog->getAddress());
+	snprintf(windowName, sizeof(windowName), "Find out what %s %p address", typeStr, hitDialog->getAddress());
 	SetWindowText(hwnd, windowName);
 	ShowWindow(hwnd, SW_SHOW);
 

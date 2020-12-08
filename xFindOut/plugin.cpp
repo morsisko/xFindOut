@@ -102,7 +102,7 @@ PLUG_EXPORT void CBBREAKPOINT(CBTYPE cbType, PLUG_CB_BREAKPOINT* info)
 
         char disassembly[128];
         GuiGetDisassembly(previousInstructionAddress, disassembly);
-        snprintf(hitEntry.instruction, sizeof(hitEntry.instruction), "%X - %s", hitEntry.instructionAddress, disassembly);
+        snprintf(hitEntry.instruction, sizeof(hitEntry.instruction), "%p - %s", hitEntry.instructionAddress, disassembly);
 
         REGDUMP regdump;
         DbgGetRegDumpEx(&regdump, sizeof(regdump));
