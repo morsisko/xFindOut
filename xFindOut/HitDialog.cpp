@@ -105,7 +105,28 @@ INT_PTR CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 					case IDC_COPY_ADDRESS:
 					{
-						;
+						LRESULT id = ListView_GetSelectionMark(GetDlgItem(hwndDlg, IDC_HITS_TABLE));
+						if (id == -1)
+							return FALSE;
+
+						duint address = StateManager::getInstance().getInstructionAddressByHwndAndIndex(hwndDlg, id);
+
+						if (!address)
+							return FALSE;
+
+						OpenClipboard(hwndDlg);
+						EmptyClipboard();
+
+						char buffer[32];
+						sprintf_s(buffer, "0x%X", address);
+						int stringSize = strlen(buffer) + 1;
+						HGLOBAL memory = GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT, stringSize);
+						void* globalMemoryPointer = GlobalLock(memory);
+						strcpy_s((char*)globalMemoryPointer, stringSize, buffer);
+						GlobalUnlock(memory);
+						SetClipboardData(CF_TEXT, memory);
+
+						CloseClipboard();
 					}
 					break;
 				}
