@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <commctrl.h>
 #include "pluginsdk/bridgemain.h"
+#include "defs.h"
 
 #define WM_UPDATE_HITS WM_USER+1
 #define WM_UPDATE_INSERT_ROW WM_USER+20

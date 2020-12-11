@@ -118,7 +118,7 @@ INT_PTR CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 						EmptyClipboard();
 
 						char buffer[32];
-						sprintf_s(buffer, "0x%X", address);
+						sprintf_s(buffer, "0x" HEX_PRINT, address);
 						int stringSize = strlen(buffer) + 1;
 						HGLOBAL memory = GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT, stringSize);
 						void* globalMemoryPointer = GlobalLock(memory);
@@ -190,7 +190,7 @@ void spawnDialog(void* userdata)
 		typeStr = "writes to";
 
 	char windowName[64];
-	snprintf(windowName, sizeof(windowName), "Find out what %s %p address", typeStr, hitDialog->getAddress());
+	snprintf(windowName, sizeof(windowName), "Find out what %s " HEX_PRINT " address", typeStr, hitDialog->getAddress());
 	SetWindowText(hwnd, windowName);
 	ShowWindow(hwnd, SW_SHOW);
 

@@ -167,6 +167,7 @@
     <ClCompile Include="StateManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="defs.h" />
     <ClInclude Include="FindOutEntry.h" />
     <ClInclude Include="HitDialog.h" />
     <ClInclude Include="HitEntry.h" />
