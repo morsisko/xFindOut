@@ -25,5 +25,6 @@ public:
 	bool sendCloseMessageByAddress(duint breakpointAddress);
 	bool deleteEntry(HWND hwnd);
 	bool disableEntry(HWND hwnd);
+	void shutdownAll();
 };
 

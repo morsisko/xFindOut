@@ -150,3 +150,9 @@ bool StateManager::disableEntry(HWND hwnd)
     it->get()->disable();
     return true;
 }
+
+void StateManager::shutdownAll()
+{
+    for (const auto& entry : entries)
+        SendMessage(entry->getDialog(), WM_CLOSE, 0, 0);
+}
