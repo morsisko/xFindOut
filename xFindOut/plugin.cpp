@@ -108,13 +108,13 @@ PLUG_EXPORT void CBBREAKPOINT(CBTYPE cbType, PLUG_CB_BREAKPOINT* info)
         DbgGetRegDumpEx(&regdump, sizeof(regdump));
 
 #ifdef _WIN64
-        snprintf(hitEntry.info, sizeof(hitEntry.info), "First time the entry was hitted with the following register values:\r\nRAX=%p\r\nRBX=%p\r\nRCX=%p\r\nRDX=%p\r\nRBP=%p\r\nRSP=%p\r\nRSI=%p\r\nRDI=%p\r\nRIP=%p\r\n"
+        snprintf(hitEntry.info, sizeof(hitEntry.info), "First time the entry was hit with the following register values:\r\nRAX=%p\r\nRBX=%p\r\nRCX=%p\r\nRDX=%p\r\nRBP=%p\r\nRSP=%p\r\nRSI=%p\r\nRDI=%p\r\nRIP=%p\r\n"
             "R8=%p\r\nR9=%p\r\nR10=%p\r\nR11=%p\r\nR12=%p\r\nR13=%p\r\nR14=%p\r\nR15=%p\r\n",
             regdump.regcontext.cax, regdump.regcontext.cbp, regdump.regcontext.ccx, regdump.regcontext.cdx, regdump.regcontext.cbp, regdump.regcontext.csp,
             regdump.regcontext.csi, regdump.regcontext.cdi, regdump.regcontext.cip, regdump.regcontext.r8, regdump.regcontext.r9, regdump.regcontext.r10, 
             regdump.regcontext.r11, regdump.regcontext.r12, regdump.regcontext.r13, regdump.regcontext.r14, regdump.regcontext.r15);
 #else
-        snprintf(hitEntry.info, sizeof(hitEntry.info), "First time the entry was hitted with the following register values:\r\nEAX=%p\r\nEBX=%p\r\nECX=%p\r\nEDX=%p\r\nEBP=%p\r\nESP=%p\r\nESI=%p\r\nEDI=%p\r\nEIP=%p\r\n",
+        snprintf(hitEntry.info, sizeof(hitEntry.info), "First time the entry was hit with the following register values:\r\nEAX=%p\r\nEBX=%p\r\nECX=%p\r\nEDX=%p\r\nEBP=%p\r\nESP=%p\r\nESI=%p\r\nEDI=%p\r\nEIP=%p\r\n",
             regdump.regcontext.cax, regdump.regcontext.cbp, regdump.regcontext.ccx, regdump.regcontext.cdx, regdump.regcontext.cbp, regdump.regcontext.csp,
             regdump.regcontext.csi, regdump.regcontext.cdi, regdump.regcontext.cip);
 #endif
